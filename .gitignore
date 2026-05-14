@@ -8,3 +8,8 @@
    *.safetensors
    *.pt
    *.bin
+# Ignore the virtual environment
+.venv/
+venv/
+env/
+ENV/

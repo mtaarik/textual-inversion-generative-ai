@@ -1,0 +1,10 @@
+# Dataset et modèles lourds
+   dataset/*
+   !dataset/README.md
+   models/
+   checkpoints/
+   outputs/
+   *.ckpt
+   *.safetensors
+   *.pt
+   *.bin

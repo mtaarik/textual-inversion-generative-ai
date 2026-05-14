@@ -1,1 +1,5 @@
-"Pillow" 
+Pillow 
+torch
+diffusers
+transformers
+accelerate

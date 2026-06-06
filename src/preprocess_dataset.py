@@ -2,10 +2,6 @@ import os
 from PIL import Image
 
 def prepare_dataset(input_dir, output_dir, target_size=(512, 512)):
-    """
-    Recadre les images au centre pour en faire des carrés, 
-    puis les redimensionne à target_size.
-    """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -18,10 +14,10 @@ def prepare_dataset(input_dir, output_dir, target_size=(512, 512)):
             
             try:
                 with Image.open(filepath) as img:
-                    # Convertir en RGB (utile si l'image est en RGBA ou autre)
+                    # Convertir en RGB
                     img = img.convert("RGB")
                     
-                    # 1. Calcul pour le recadrage (Center Crop)
+                    # Calcul pour le recadrage
                     width, height = img.size
                     new_size = min(width, height)
                     
@@ -32,16 +28,16 @@ def prepare_dataset(input_dir, output_dir, target_size=(512, 512)):
                     
                     img_cropped = img.crop((left, top, right, bottom))
                     
-                    # 2. Redimensionnement (512x512)
+                    # Redimensionnement (512x512)
                     img_resized = img_cropped.resize(target_size, Image.Resampling.LANCZOS)
                     
-                    # 3. Sauvegarde
+                    # Sauvegarde
                     output_path = os.path.join(output_dir, f"processed_{filename}")
                     img_resized.save(output_path, "JPEG", quality=95)
-                    print(f"✅ Succès : {filename} -> processed_{filename}")
+                    print(f" Succès : {filename} -> processed_{filename}")
                     
             except Exception as e:
-                print(f"❌ Erreur avec {filename}: {e}")
+                print(f" Erreur avec {filename}: {e}")
 
 if __name__ == "__main__":
     # Calcul des chemins absolus pour éviter les erreurs selon d'où on lance le script

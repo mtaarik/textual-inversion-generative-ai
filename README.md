@@ -1,127 +1,64 @@
-# Textual Inversion vs DreamBooth
+# Personalizing Stable Diffusion: Textual Inversion vs DreamBooth (LoRA)
 
-## Project Overview
+Teaching **Stable Diffusion v1.5** a new visual concept (a specific toy car) from only **10 photos**,
+and comparing two personalization methods: **Textual Inversion**, which learns a single new word
+embedding, and **DreamBooth with LoRA**, which fine-tunes low-rank adapters of the UNet.
 
-This project explores two personalization techniques for Stable Diffusion v1.5:
+Team project (ENSIAS):
+[@mtaarik](https://github.com/mtaarik) (project setup, image preprocessing, baseline),
+[@SafaeBenabbou](https://github.com/SafaeBenabbou) (Textual Inversion),
+[@nadasomate](https://github.com/nadasomate) (DreamBooth LoRA).
 
-- Textual Inversion
-- DreamBooth (LoRA)
+## Results
 
-The objective is to teach the model a new visual concept corresponding to a toy car using a small custom dataset.
+| | Baseline (no training) | Textual Inversion | DreamBooth (LoRA) |
+|---|---|---|---|
+| Example | ![](results/baseline/baseline_img_1.png) | ![](results/textual_inversion/result1.png) | ![](results/dreambooth/dreambooth_result1.png) |
+| What is learned | nothing | one token embedding `<toycar>` | LoRA weights of the UNet |
+| Trained file size | n/a | **4 KB** | 3.1 MB |
+| Training steps | n/a | 1,000 (lr 5e-4) | 800 (lr 1e-4) |
+| Training time (Colab GPU) | n/a | 73.9 min | **24.1 min** |
+| Fidelity to the real object | generic toy car | general concept | **closest to the real object, more details kept** |
 
----
+**Takeaway:** DreamBooth LoRA gives the best visual fidelity and trains three times faster, while
+Textual Inversion produces an extremely light artifact (4 KB) that plugs into any prompt.
 
-## Dataset
+More generated images: [`results/`](results/).
 
-The dataset contains 10 images of a toy car captured from different viewpoints.
+## Pipeline
 
-Dataset location:
+1. **Dataset:** 10 photos of the toy car from different viewpoints (`dataset/raw/`).
+2. **Preprocessing** (`src/preprocess_dataset.py`): center crop and resize to 512×512
+   (`dataset/processed/`).
+3. **Baseline** (`notebooks/01_baseline.ipynb`): what Stable Diffusion v1.5 generates for a toy car
+   prompt without any training.
+4. **Textual Inversion** (`notebooks/02_textual_inversion.ipynb`): learns the placeholder token
+   `<toycar>`, prompt example: `a photo of <toycar> on a table`.
+5. **DreamBooth LoRA** (`notebooks/03_dreambooth.ipynb`): fine-tunes LoRA adapters with the instance
+   prompt `a photo of sks toycar`.
 
-```text
-dataset/raw/
-```
-
-Processed images:
-
-```text
-dataset/processed/
-```
-
-All images were center-cropped and resized to 512×512 pixels.
-
----
-
-## Project Structure
-
-```text
-.
-├── dataset/
-├── models/
-├── notebooks/
-├── results/
-├── src/
-├── README.md
-└── requirements.txt
-```
-
-### Notebooks
+## Repository structure
 
 ```text
-notebooks/
-├── 01_baseline.ipynb
-├── 02_textual_inversion.ipynb
-└── 03_dreambooth.ipynb
+dataset/
+  raw/                         10 original photos
+  processed/                   512x512 images used for training
+src/preprocess_dataset.py      crop and resize
+notebooks/                     baseline, Textual Inversion, DreamBooth (run on Google Colab)
+models/
+  textual_inversion_output/    learned_embeds.safetensors (4 KB)
+  dreambooth_lora_output/      pytorch_lora_weights.safetensors (3.1 MB)
+results/                       generated images for each method
 ```
 
-- Baseline generation
-- Textual Inversion training
-- DreamBooth LoRA training
+## Run it
 
----
+The notebooks were run on Google Colab with a GPU, using Hugging Face `diffusers` training scripts
+and the `runwayml/stable-diffusion-v1-5` checkpoint.
 
-## Trained Models
-
-### Textual Inversion
-
-```text
-models/textual_inversion/
-└── learned_embeds.safetensors
+```bash
+pip install -r requirements.txt
+python src/preprocess_dataset.py
 ```
 
-Embedding size:
-
-- 4 KB
-
-Training time:
-
-- 73.87 minutes
-
----
-
-### DreamBooth LoRA
-
-```text
-models/dreambooth/
-└── pytorch_lora_weights.safetensors
-```
-
-Model size:
-
-- 3.1 MB
-
-Training time:
-
-- 24.08 minutes
-
----
-
-## Generated Results
-
-### Baseline
-
-```text
-results/baseline/
-```
-
-### Textual Inversion
-
-```text
-results/textual_inversion/
-```
-
-### DreamBooth
-
-```text
-results/dreambooth/
-```
-
----
-
-## Conclusion
-
-Both methods successfully learned the toy car concept.
-
-- Textual Inversion produces an extremely lightweight embedding and learns the general concept.
-- DreamBooth generates images that are visually closer to the original toy car and preserves more details.
-
-In this project, DreamBooth achieved the best visual quality while Textual Inversion offered the lightest solution.
+Then open the notebooks in order (`01` → `03`).
